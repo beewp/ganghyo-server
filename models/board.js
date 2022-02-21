@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true,
     },
+    userId: DataTypes.STRING,
     content: DataTypes.STRING,
     img: DataTypes.STRING
   }, {
@@ -29,9 +30,9 @@ module.exports = (sequelize, DataTypes) => {
     collate: 'utf8_generak_Ci'
   });
   Board.associate = models => {
-    Board.belongsTo(models.Board);
-    Board.hasMany(models.Like);
-    Board.hasMany(models.Comment);
+    Board.belongsTo(models.User, { foreignKey: 'userId', targetKey:'userId' });
+    Board.hasMany(models.Like, {foreignKey: "postId", sourceKey: "postId"});
+    Board.hasMany(models.Comment, {foreignKey: "postId", sourceKey: "postId"});
   };
   return Board;
 };

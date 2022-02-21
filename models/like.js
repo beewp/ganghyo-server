@@ -28,8 +28,8 @@ module.exports = (sequelize, DataTypes) => {
     collate: 'utf8_generak_Ci',
   });
   Like.associate = models => {
-    Like.belongsTo(models.Board);
-    Like.belongsTo(models.User);
+    Like.belongsTo(models.Board, { foreignKey: 'postId', targetKey:'postId' });
+    Like.belongsTo(models.User, { foreignKey: 'userId', targetKey:'userId' });
   };
   return Like;
 };
