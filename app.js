@@ -1,9 +1,11 @@
 const express = require("express");
 const dotenv = require("dotenv");
+// const session = require("express-session");
 dotenv.config();
 
 const app = express();
 
+const SocketIO = require('./socket');
 const indexRouter = require('./routes/index');
 const registerRouter = require('./routes/register');
 const loginRouter = require('./routes/login');
@@ -15,8 +17,17 @@ const RequestMiddleware = (req, res, next) => {
     next();
 }
 
-const port = 3000;
+// const sessionMiddleware = session({
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie:{
+//         httpOnly: true,
+//     }
+// });
 
+port = 3000;
+
+// app.use(sessionMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(RequestMiddleware);
@@ -38,6 +49,8 @@ app.use("/api/login", loginRouter);
 //     res.status(500).send('서버 에러!'); // 500 상태 표시 후 에러 메시지 전송
 // });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(port, "Server on");
 });
+
+SocketIO(server, app);
