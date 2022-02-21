@@ -1,9 +1,18 @@
+const { Router } = require("express");
+const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 const dotenv = require('dotenv');
 
 dotenv.config();
 
 module.exports = (req, res, next) => {
     const { authorization } = req.headers;
+
+    if (!authorization ) {
+        return res.status(401).send({
+          errorMessage: "로그인 후 이용 가능한 기능입니다.",
+        });
+      }
 
     try {
         const { userId } = jwt.verify(authorization, process.env.JWT_KEY);
@@ -12,15 +21,9 @@ module.exports = (req, res, next) => {
             next();
         });
     } catch (err) {
-        if (error.name === 'TokenExpiredError'){
-            return res.status(419).json({
-                code: 419,
-                message: '토큰이 만료되었습니다.'
-            });
-
-        }
         return res.status(401).send({
             errorMessage: "로그인 후 이용 가능한 기능입니다.",
         });
     }
 };
+
