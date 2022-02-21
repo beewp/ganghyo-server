@@ -1,6 +1,7 @@
 const express = require("express");
 const AuthMiddlewares = require("../middlewares/AuthMiddlewares");
-const { Board, Comment, } = require("../models")
+const { Board, Comment, Like } = require("../models")
+const { Op } = require("sequelize")
 const router = express.Router();
 
 
@@ -25,12 +26,7 @@ router.route('/')
 router.route('/:postId')
     .get(async (req, res) =>{
         const { postId } = req.params;
-        const post = await Board.find({ postId })
-        .then(count => {
-            if (!count){
-                return res.status(404).send({error: '조회할 데이터가 없습니다.'});
-            }
-        });
+        const post = await Board.findByPk(postId);
 
         res.json({ post });
     })
@@ -54,8 +50,25 @@ router.route('/:postId')
         res.json({ success: true });
 });
 //   /post/:postId/like
-router.get(':postId/like',(req, res) => {
-    
+router.get('/:postId/like',async(req, res) => {
+    const { postId } = req.params
+
+    const likes = await Board.findAll({ include: [{
+        model: Like,
+        where: {[Op.and]: [{postId}, {check: true}]},
+    }]});
+
+    return res.json(likes);
+});
+
+router.post('/:postId/like',async (req, res) => {
+    const { postId } = req.params;
+    const userId = 'test1';
+    const check = true;
+    console.log(postId, userId, check);
+    // const likes = await Like.create( {postId, userId, check} );
+
+    return res.json(userId);
 });
 
 
