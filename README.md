@@ -28,6 +28,6 @@
         + req { 아이디, 비밀번호}, res { jwt 토큰 } 
 ### DB TABLE
 
-<img src="https://teamsparta.notion.site/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F13767840-947e-4bf8-9902-8b3df273a1b2%2FUntitled.png?table=block&id=bc72d738-f4e3-4693-8683-a0d80d15342a&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&width=2000&userId=&cache=v2"  width="700" height="370">
+<img src="https://teamsparta.notion.site/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F13767840-947e-4bf8-9902-8b3df273a1b2%2FUntitled.png?table=block&id=bc72d738-f4e3-4693-8683-a0d80d15342a&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&width=2000&userId=&cache=v2">
 
 ### 회고
