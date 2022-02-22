@@ -1,6 +1,5 @@
 const express = require("express");
 const dotenv = require("dotenv");
-// const session = require("express-session");
 dotenv.config();
 
 const app = express();
@@ -17,17 +16,17 @@ const RequestMiddleware = (req, res, next) => {
     next();
 }
 
-// const sessionMiddleware = session({
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie:{
-//         httpOnly: true,
-//     }
-// });
+const sessionMiddleware = session({
+    resave: false,
+    saveUninitialized: false,
+    cookie:{
+        httpOnly: true,
+    }
+});
 
 port = 3000;
 
-// app.use(sessionMiddleware);
+app.use(sessionMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(RequestMiddleware);
