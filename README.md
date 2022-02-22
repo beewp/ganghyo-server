@@ -7,13 +7,13 @@
     + GET /post  게시글 전체 목록 가져오기
         + req { }, res { 게시글 전체 } 
     + POST /post 게시글 추가
-        + req { 작성자ID, 이미지URL, 본문내용 }, res { }
+        + req { 작성자ID, 이미지URL, 본문내용 }, res { success, 메시지 }
     + GET /post/:postId 상세 게시글 가져오기 
-        + req { }, res { 작성자ID, 이미지URL, 본문내용 }, res { }
+        + req { }, res { 작성자ID, 이미지URL, 본문내용 }, res { success, 메시지 }
     + DELETE /post/:postId 게시글 삭제
         + req { 포스트ID  }, res { }
     + PUT /post/:postId 게시글 수정
-        + req { 포스트ID, 이미지 위치, 이미지, 본문내용 } , res { }
+        + req { 포스트ID, 이미지 위치, 이미지, 본문내용 } , res { success, 메시지 }
         
 + 좋아요
     + GET /post/:postId/like 게시글의 좋아요 가져오기
@@ -23,7 +23,7 @@
     > 삭제도 post로 해도 되는지? 아니면 put으로 만들어야 하는지? 아니면 delete를 만들어줘야 하는지?
 + 회원 관리
     +  POST /register 회원가입
-        + req { 아이디, 닉네임, 비밀번호, 비밀번호 확인}, res { }
+        + req { 아이디, 닉네임, 비밀번호, 비밀번호 확인}, res { success, 메시지 }
     +  POST /login    로그인
         + req { 아이디, 비밀번호}, res { jwt 토큰 } 
 ### DB TABLE
