@@ -2,13 +2,14 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv")
 const { User } = require("../models");
+const LoginedMiddleware = require("../middlewares/LoginedMiddleware");0
 
 dotenv.config();
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-    const users = await User.findAll()
+router.get('/', LoginedMiddleware, async (req, res) => {
+    const users = await User.findAll();
 
     res.json(users);
 });
@@ -16,7 +17,6 @@ router.get('/', async (req, res) => {
 router.post('/', (async (req, res) => {
     const { user_id, user_pw } = req.body;
 
-    console.log(user_pw, user_id);
     const user = await User.findOne({
         where: {
             userId: user_id,
@@ -28,10 +28,11 @@ router.post('/', (async (req, res) => {
         });
     }
 
-    const mytoken = jwt.sign({ user_id: user.userId }, process.env.JWT_KEY);
+    const mytoken = jwt.sign({ userId: user.userId }, "secret");
     console.log(mytoken);
-    res.send({ mytoken });
-})
+
+    res.send({ msg: "성공", mytoken, nickname: user.nickname } );
+    })
 );
 
 module.exports = router;
