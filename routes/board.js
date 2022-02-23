@@ -5,19 +5,6 @@ const fs = require("fs");
 const path = require("path");
 const multerS3 = require("multer-s3");
 const AWS = require("aws-sdk");
-const cors = require("cors");
-
-whitelis =[]
-
-const corsOptions = {
-    origin: function(origin, callback){
-        if (whitelist.indexOf(origin) !== -1){
-            callback(null, true);    
-        } else {
-            callback(new Error("Not Allowed Origin!"));
-        }
-    }
-}
 
 dotenv.config();
 const AuthMiddlewares = require("../middlewares/AuthMiddlewares");
@@ -51,9 +38,12 @@ router.get('/', async (req, res) => {
     res.json({ posts });
 });
 router.post('/', AuthMiddlewares, upload.single('img'), async (req, res) => {
-    const { user_id, post_content } = req.body;
-    const img = req.file.location;
-    await Board.create({ userId: user_id, img, content: post_content });
+    const { user_id, post_content, img_position } = req.body;
+    const img = req.file;
+    if (!img){
+        await Board.create({ userId: user_id, content: post_content });
+    }
+    await Board.create({ userId: user_id, img:img.location, content: post_content, img_position });
 
     res.json({ success: true });
 });
@@ -81,7 +71,11 @@ router.route('/:postId')
 router.put(AuthMiddlewares, upload.single('img'), async (req, res) => {
     const { postId } = req.params;
     const { post_content } = req.body;
-    const img = req.file.location;
+    const img = req.file;
+    if (!img){
+        await Board.create({ userId: user_id, content: post_content });
+    }
+    await Board.create({ userId: user_id, img:img.location, content: post_content, img_position });
     await Board.update({ img, content: post_content },
         { where: { postId } });
     res.json({ success: true });
@@ -93,24 +87,26 @@ router.get('/:postId/like', async (req, res) => {
     const post = await Board.findAll({
         include: [{
             model: Like,
-            where: { [Op.and]: [{ postId }, { check: true }] },
+            where: { [Op.and]: [{ postId }, { check: true }],
+        },
         }]
     });
-
-    return res.json(post.likes);
+    const likes = post[0].dataValues.Likes;
+    
+    return res.json(likes.length);
 });
 
-router.put('/:postId/like', async (req, res) => {
+router.put('/:postId/like', AuthMiddlewares, async (req, res) => {
     const { postId } = req.params;
     const { user_id } = req.body;
 
-    const existLike = await Like.find({
+    const existLike = await Like.findOne({
         where: {
             [Op.and]: [{ postId }, { userId: user_id }],
         },
     });
     if (!existLike) {
-        const likes = await Like.create({ postId, userId, check: true });
+        const likes = await Like.create({ postId, userId: user_id, check: true });
     } else {
         await Like.destroy({
             where: {
