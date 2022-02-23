@@ -3,6 +3,12 @@ const AuthMiddlewares = require("../middlewares/AuthMiddlewares");
 
 const router = express.Router();
 
+router.get("/", AuthMiddlewares, async (req, res) =>{
+    res.send({
+        msg: "ganghyo's server"
+    });
+});
+
 router.get("/user/me", AuthMiddlewares, async (req, res) =>{
     const { user } = res.locals;
     res.send({

@@ -2,7 +2,8 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv")
 const { User } = require("../models");
-const LoginedMiddleware = require("../middlewares/LoginedMiddleware");0
+const LoginedMiddleware = require("../middlewares/LoginedMiddleware");
+
 
 dotenv.config();
 
@@ -27,11 +28,11 @@ router.post('/', (async (req, res) => {
             errorMessage: "아이디 또는 패스워드가 잘못됐습니다."
         });
     }
-
-    const mytoken = jwt.sign({ userId: user.userId }, "secret");
-    console.log(mytoken);
-
-    res.send({ msg: "성공", mytoken, nickname: user.nickname } );
+    
+    res.send({ 
+        msg: "성공", 
+        mytoken: jwt.sign({ userId: user.userId }, "secret"), 
+        nickname: user.nickname } );
     })
 );
 
