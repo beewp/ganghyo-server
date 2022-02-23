@@ -7,12 +7,12 @@ const app = express();
 
 const cors = require("cors");
 
-whitelis =[];
+// whitelis =[];
 
-const corsOptions = {
-    origin: '*', //이부분에 사이트 url이 필요
-    Credentials: true
-}
+// const corsOptions = {
+//     origin: '*', //이부분에 사이트 url이 필요
+//     Credentials: true
+// }
 
 const SocketIO = require('./socket');
 const indexRouter = require('./routes/index');
