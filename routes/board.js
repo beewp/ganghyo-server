@@ -5,6 +5,19 @@ const fs = require("fs");
 const path = require("path");
 const multerS3 = require("multer-s3");
 const AWS = require("aws-sdk");
+const cors = require("cors");
+
+whitelis =[]
+
+const corsOptions = {
+    origin: function(origin, callback){
+        if (whitelist.indexOf(origin) !== -1){
+            callback(null, true);    
+        } else {
+            callback(new Error("Not Allowed Origin!"));
+        }
+    }
+}
 
 dotenv.config();
 const AuthMiddlewares = require("../middlewares/AuthMiddlewares");
