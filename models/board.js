@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true,
     },
+    img_position: DataTypes.STRING,
     userId: DataTypes.STRING,
     content: DataTypes.STRING,
     img: DataTypes.STRING
