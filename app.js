@@ -9,33 +9,22 @@ const indexRouter = require('./routes/index');
 const registerRouter = require('./routes/register');
 const loginRouter = require('./routes/login');
 const boardRouter = require('./routes/board');
-const commentRouter = require('./routes/comment');
 
 const RequestMiddleware = (req, res, next) => {
     console.log("Request Url", req.originalUrl, "-", new Date());
     next();
-}
-
-const sessionMiddleware = session({
-    resave: false,
-    saveUninitialized: false,
-    cookie:{
-        httpOnly: true,
-    }
-});
+};
 
 port = 3000;
 
-app.use(sessionMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(RequestMiddleware);
 
 app.use("/", indexRouter);
-app.use("/api/post", boardRouter);
-app.use("/api/register", registerRouter);
-app.use("/api/login", loginRouter);
-// app.use("/api/comment", commentRouter);
+app.use("/post", boardRouter);
+app.use("/register", registerRouter);
+app.use("/login", loginRouter);
 
 // app.use((req, res, next) =>{
 //     const error = new Error("잘못된 접근입니다");
