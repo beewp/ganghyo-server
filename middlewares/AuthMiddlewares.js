@@ -9,21 +9,21 @@ module.exports = (req, res, next) => {
     const [authType, authToken] = (authorization || "").split(" ");
 
     if (!authToken || authType !== "Bearer") {
-        res.status(401).send({
+        console.log(authToken," + " ,authType);
+        return res.status(401).send({
         errorMessage: "로그인 후 이용 가능한 기능입니다.",
         });
-        return;
     }
 
     try {
+
         const { userId } = jwt.verify(authToken, "secret");
+    
         User.findByPk( userId ).then((user) => {
             res.locals.user = user;
-            res.locals.jwt = authorization;
             next();
         });
     } catch (err) {
-        console.log("3번");
         return res.status(401).send({
             errorMessage: "로그인 후 이용 가능한 기능입니다.",
         });
