@@ -87,7 +87,7 @@ router.get('/:postId/like', async (req, res) => {
     const post = await Board.findAll({
         include: [{
             model: Like,
-            where: { [Op.and]: [{ postId }, { check: true }],
+            where: { [Op.and]: [{ postId }],
         },
         }]
     });

@@ -3,7 +3,7 @@ const AuthMiddlewares = require("../middlewares/AuthMiddlewares");
 
 const router = express.Router();
 
-router.get("/", AuthMiddlewares, async (req, res) =>{
+router.get("/", async (req, res) =>{
     res.send({
         msg: "ganghyo's server"
     });
