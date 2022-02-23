@@ -23,7 +23,7 @@ const boardRouter = require('./routes/board');
 port = 3000;
 
 app.use(cookieParser());
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
