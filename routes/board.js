@@ -2,7 +2,7 @@ const express = require("express");
 
 const dotenv = require("dotenv");
 const fs = require("fs");
-const multer = require("multer"); 
+const multer = require("multer");
 const multerS3 = require("multer-s3");
 const AWS = require("aws-sdk");
 
@@ -47,8 +47,9 @@ router.get('/', async (req, res) => {
                 attributes: ["userId", "postId"],
             },
         ],
+        order: [["updatedAt", "DESC"]]
     });
-
+    console.log(posts);
     const posts_obj = posts.map((ele) => {
         const obj = {
             post_id: ele["postId"],
@@ -56,21 +57,28 @@ router.get('/', async (req, res) => {
             post_content: ele["content"],
             post_img: ele["img"],
             img_position: ele["img_position"],
-            nickname: ele["User"]["nickname"],
             post_like: ele["Likes"].length,
             createdAt: ele["createdAt"],
             upload_date: ele["updatedAt"],
+            nickname: ele["User"]["nickname"],
         };
-
         return obj;
     });
     res.json({ posts: posts_obj });
 });
-router.post('/', checkPost, async (req, res) => {
-    const { user_id, post_content, img_position, post_img } = req.body;
-    await Board.create({ userId: user_id, img:post_img, content: post_content, img_position });
+router.post('/', checkLogin,async (req, res) => {
+    try {
+        const { post_content, img_position, post_img } = req.body;
+        const { userId } = res.locals;
+        console.log(userId, post_img, post_content, img_position);
 
-    res.json({ msg: "게시글 저장 성공", success: true });
+        await Board.create({ userId, img: post_img, content: post_content, img_position });
+
+        return res.json({ msg: "게시글 저장 성공", success: true });
+    } catch (err) {
+        return res.json({ msg: "알수없는 에러", success: false });
+    }
+
 });
 
 //   /post/:postId
@@ -120,7 +128,7 @@ router.route('/:postId')
     })
     .delete(checkLogin, async (req, res) => {
         const { postId } = req.params;
-
+        
         await Board.destroy({ where: { postId } })
             .then(count => {
                 if (!count) {
@@ -132,7 +140,12 @@ router.route('/:postId')
 
 router.put(checkPost, async (req, res) => {
     const { postId } = req.params;
-    const { post_content } = req.body;
+    const { post_content, post_img, img_position } = req.body;
+    const { userId } = res.locals;
+    post = await Board.findByPk(postId);
+    if (userId !== post.userId ){
+        return res.send({msg:" 작성자가 다릅니다. "});
+    }
 
     await Board.update({ img: post_img, content: post_content, img_position },
         { where: { postId } });
@@ -150,9 +163,9 @@ router.get('/:postId/like', async (req, res) => {
         },
     });
     if (!existLike) {
-        return res.json({like_check:false});
+        return res.json({ like_check: false });
     } else {
-        return res.json({like_check:true});
+        return res.json({ like_check: true });
     }
 });
 
