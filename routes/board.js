@@ -1,62 +1,124 @@
 const express = require("express");
-const multer = require("multer");
+
 const dotenv = require("dotenv");
 const fs = require("fs");
-const path = require("path");
+const multer = require("multer"); 
 const multerS3 = require("multer-s3");
 const AWS = require("aws-sdk");
 
 dotenv.config();
-const AuthMiddlewares = require("../middlewares/AuthMiddlewares");
-const { Board, Like } = require("../models");
+
+const { checkLogin } = require("../middlewares/CheckLoginedMiddlewares");
+const { checkPost } = require("../middlewares/CheckInputMiddlewares");
+const { Board, Like, User } = require("../models");
 const { Op } = require("sequelize");
 const router = express.Router();
 
-AWS.config.update({
-    accessKeyId: process.env.S3_ACCESS_KEY_ID,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-    region: 'ap-northeast-2',
-});
+// aws 스토리지 사용을 위한 코드
+// AWS.config.update({
+//     accessKeyId: process.env.S3_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+//     region: 'ap-northeast-2',
+// });
 
-const upload = multer({
-    storage: multerS3({
-        s3: new AWS.S3(),
-        bucket: 'pracimgmanage',
-        key(req, file, cb) {
-            cb(null, `original/${Date.now()}`);
-        },
-    }),
-});
+// const upload = multer({
+//     storage: multerS3({
+//         s3: new AWS.S3(),
+//         bucket: 'pracimgmanage',
+//         key(req, file, cb) {
+//             cb(null, `original/${Date.now()}`);
+//         },
+//     }),
+// });
 
 
 // /post
 router.get('/', async (req, res) => {
     const posts = await Board.findAll({
-        order: [["createdAt", "DESC"]],
+        include: [
+            {
+                model: User,
+                required: false,
+                attributes: ["userId", "nickname"],
+            },
+            {
+                model: Like,
+                required: false,
+                attributes: ["userId", "postId"],
+            },
+        ],
     });
 
-    res.json({ posts });
-});
-router.post('/', AuthMiddlewares, upload.single('img'), async (req, res) => {
-    const { user_id, post_content, img_position } = req.body;
-    const img = req.file;
-    if (!img){
-        await Board.create({ userId: user_id, content: post_content });
-    }
-    await Board.create({ userId: user_id, img:img.location, content: post_content, img_position });
+    const posts_obj = posts.map((ele) => {
+        const obj = {
+            post_id: ele["postId"],
+            userId: ele["userId"],
+            post_content: ele["content"],
+            post_img: ele["img"],
+            img_position: ele["img_position"],
+            nickname: ele["User"]["nickname"],
+            post_like: ele["Likes"].length,
+            createdAt: ele["createdAt"],
+            upload_date: ele["updatedAt"],
+        };
 
-    res.json({ success: true });
+        return obj;
+    });
+    res.json({ posts: posts_obj });
+});
+router.post('/', checkPost, async (req, res) => {
+    const { user_id, post_content, img_position, post_img } = req.body;
+    await Board.create({ userId: user_id, img:post_img, content: post_content, img_position });
+
+    res.json({ msg: "게시글 저장 성공", success: true });
 });
 
 //   /post/:postId
 router.route('/:postId')
     .get(async (req, res) => {
-        const { postId } = req.params;
-        const post = await Board.findByPk(postId);
+        const postId = Number(req.params.postId);
+        if (!postId) {
+            return res
+                .status(400)
+                .json({ msg: false, errorMessage: "요청이 올바르지 않습니다." });
+        }
+        const post = await Board.findOne({
+            where: { postId },
+            include: [
+                {
+                    model: User,
+                    required: false,
+                    attributes: ["userId", "nickname"],
+                },
+                {
+                    model: Like,
+                    required: false,
+                    attributes: ["userId", "postId"],
+                },
+            ],
+        });
 
-        res.json({ post });
+        if (!post) {
+            return res
+                .status(400)
+                .json({ msg: false, errorMessage: "없는 게시글 입니다." });
+        }
+
+        const post_obj = {
+            post_id: post["postId"],
+            userId: post["userId"],
+            post_content: post["content"],
+            post_img: post["img"],
+            img_position: post["img_position"],
+            nickname: post["User"]["nickname"],
+            post_like: post["Likes"].length,
+            createdAt: post["createdAt"],
+            upload_date: post["updatedAt"],
+        };
+
+        res.json({ post: post_obj });
     })
-    .delete(AuthMiddlewares, async (req, res) => {
+    .delete(checkLogin, async (req, res) => {
         const { postId } = req.params;
 
         await Board.destroy({ where: { postId } })
@@ -68,41 +130,39 @@ router.route('/:postId')
         res.json({ success: true });
     });
 
-router.put(AuthMiddlewares, upload.single('img'), async (req, res) => {
+router.put(checkPost, async (req, res) => {
     const { postId } = req.params;
     const { post_content } = req.body;
-    const img = req.file;
-    if (!img){
-        await Board.create({ userId: user_id, content: post_content });
-    }
-    await Board.create({ userId: user_id, img:img.location, content: post_content, img_position });
-    await Board.update({ img, content: post_content },
+
+    await Board.update({ img: post_img, content: post_content, img_position },
         { where: { postId } });
     res.json({ success: true });
 });
-//   /post/:postId/like
+
+//   /get/:postId/like
 router.get('/:postId/like', async (req, res) => {
     const { postId } = req.params;
-
-    const post = await Board.findAll({
-        include: [{
-            model: Like,
-            where: { [Op.and]: [{ postId }],
-        },
-        }]
-    });
-    const likes = post[0].dataValues.Likes;
-    
-    return res.json(likes.length);
-});
-
-router.put('/:postId/like', AuthMiddlewares, async (req, res) => {
-    const { postId } = req.params;
-    const { user_id } = req.body;
+    const { userId } = res.locals.user
 
     const existLike = await Like.findOne({
         where: {
-            [Op.and]: [{ postId }, { userId: user_id }],
+            [Op.and]: [{ postId }, { userId }],
+        },
+    });
+    if (!existLike) {
+        return res.json({like_check:false});
+    } else {
+        return res.json({like_check:true});
+    }
+});
+
+router.put('/:postId/like', checkLogin, async (req, res) => {
+    const { postId } = req.params;
+    const { userId } = res.locals.user
+
+    const existLike = await Like.findOne({
+        where: {
+            [Op.and]: [{ postId }, { userId }],
         },
     });
     if (!existLike) {
