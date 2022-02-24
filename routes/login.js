@@ -2,14 +2,14 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv")
 const { User } = require("../models");
-const LoginedMiddleware = require("../middlewares/LoginedMiddleware");
+const { checkNotLogin } = require("../middlewares/CheckLoginedMiddlewares");
 
 
 dotenv.config();
 
 const router = express.Router();
 
-router.get('/', LoginedMiddleware, async (req, res) => {
+router.get('/', checkNotLogin, async (req, res) => {
     const users = await User.findAll();
 
     res.json(users);

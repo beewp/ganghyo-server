@@ -1,28 +1,16 @@
 const express = require("express");
 const { User } = require("../models");
 const { Op } = require("sequelize");
-const LoginedMiddleware = require("../middlewares/LoginedMiddleware");
+const { checkRegister } = require("../middlewares/CheckInputMiddlewares");
+const { checkNotLogin } = require("../middlewares/CheckLoginedMiddlewares");
 
 const router = express.Router();
 
-router.get("/", LoginedMiddleware, async(req, res) =>{
+router.get("/", checkNotLogin, async(req, res) =>{
   res.send();
 });
 
-router.post('/', (async (req, res) => {
-    const { user_id, nickname, user_pw, pw_check } = req.body;
-    const exptext = /^[A-Za-z0-9]/;
-
-    if (nickname.length < 3 || exptext.test(nickname) === false ){
-      return res.status(400).send({
-            errorMessage: "닉네임 작성 규칙을 따라주세요.",
-          });
-    }
-    if (user_pw !== pw_check) {
-      return res.status(400).send({
-        errorMessage: "패스워드가 패스워드 확인란과 동일하지 않습니다.",
-      });
-    }
+router.post('/',checkRegister, (async (req, res) => {
   
     const existUsers = await User.findOne({
       where: {
@@ -36,7 +24,7 @@ router.post('/', (async (req, res) => {
     }
     await User.create({ userId: user_id, nickname, password: user_pw });
     
-    return res.status(201).send({ success: true });      
+    return res.status(201).send({ msg:"회원가입을 축하합니다.",success: true });      
     })
 );
 
