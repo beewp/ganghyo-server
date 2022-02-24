@@ -1,10 +1,8 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
 const dotenv = require('dotenv');
 
 dotenv.config();
-
-module.exports = (req, res, next) => {
+exports.checkLogin = (req, res, next) => {
     const { authorization } = req.headers;
     const [authType, authToken] = (authorization || "").split(" ");
 
@@ -16,13 +14,9 @@ module.exports = (req, res, next) => {
     }
 
     try {
-
         const { userId } = jwt.verify(authToken, "secret");
-    
-        User.findByPk( userId ).then((user) => {
-            res.locals.user = user;
-            next();
-        });
+        res.locals.userId = userId;
+        next();
     } catch (err) {
         return res.status(401).send({
             errorMessage: "로그인 후 이용 가능한 기능입니다.",
@@ -30,3 +24,11 @@ module.exports = (req, res, next) => {
     }
 };
 
+exports.checkNotLogin = (req, res, next) => {
+    const { authorization } = req.headers;
+    if (!authorization){
+        next();
+    }else{
+        res.status(201).send({msg: "login필요 상태"});
+    }
+}
