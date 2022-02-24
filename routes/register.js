@@ -11,7 +11,7 @@ router.get("/", checkNotLogin, async(req, res) =>{
 });
 
 router.post('/',checkRegister, (async (req, res) => {
-  
+    const { user_id, nickname, user_pw } = req.body;
     const existUsers = await User.findOne({
       where: {
         [Op.or]: [{ nickname }, { userId : user_id }],
