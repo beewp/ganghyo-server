@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Board.init({
-    postId:{
+    postId: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
@@ -31,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
     collate: 'utf8_generak_Ci'
   });
   Board.associate = models => {
-    Board.belongsTo(models.User, { foreignKey: 'userId', targetKey:'userId' });
-    Board.hasMany(models.Like, {foreignKey: "postId", sourceKey: "postId"});
-    Board.hasMany(models.Comment, {foreignKey: "postId", sourceKey: "postId"});
+    Board.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'userId' });
+    Board.hasMany(models.Like, { foreignKey: "postId", sourceKey: "postId" });
+    Board.hasMany(models.Comment, { foreignKey: "postId", sourceKey: "postId" });
   };
   return Board;
 };
