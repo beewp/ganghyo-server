@@ -44,27 +44,32 @@ router.get('/', async (req, res) => {
             {
                 model: Like,
                 required: false,
-                attributes: ["userId", "postId"],
+                attributes: ["userId"],
+                include: [{
+                    model: User,
+                    required: false,
+                    attributes: ["nickname"],
+                }],
             },
         ],
         order: [["updatedAt", "DESC"]]
     });
-    console.log(posts);
+
+
     const posts_obj = posts.map((ele) => {
         const obj = {
             post_id: ele["postId"],
-            userId: ele["userId"],
             post_content: ele["content"],
             post_img: ele["img"],
             img_position: ele["img_position"],
-            post_like: ele["Likes"].length,
             createdAt: ele["createdAt"],
             upload_date: ele["updatedAt"],
             nickname: ele["User"]["nickname"],
+            like_list: ele["Likes"].map((obj) =>  obj["User"].nickname),
         };
         return obj;
     });
-    res.json({ posts: posts_obj });
+    res.json({ posts : posts_obj });
 });
 router.post('/', checkLogin,async (req, res) => {
     try {
@@ -102,6 +107,11 @@ router.route('/:postId')
                     model: Like,
                     required: false,
                     attributes: ["userId", "postId"],
+                    include: [{
+                        model: User,
+                        required: false,
+                        attributes: ["nickname"],
+                    }],
                 },
             ],
         });
@@ -114,14 +124,13 @@ router.route('/:postId')
 
         const post_obj = {
             post_id: post["postId"],
-            userId: post["userId"],
             post_content: post["content"],
             post_img: post["img"],
             img_position: post["img_position"],
             nickname: post["User"]["nickname"],
-            post_like: post["Likes"].length,
             createdAt: post["createdAt"],
             upload_date: post["updatedAt"],
+            like_list: post["Likes"].map((post) =>  post["User"].nickname),
         };
 
         res.json({ post: post_obj });
@@ -171,7 +180,7 @@ router.get('/:postId/like', async (req, res) => {
 
 router.put('/:postId/like', checkLogin, async (req, res) => {
     const { postId } = req.params;
-    const { userId } = res.locals.user
+    const { userId } = res.locals
 
     const existLike = await Like.findOne({
         where: {
@@ -179,7 +188,7 @@ router.put('/:postId/like', checkLogin, async (req, res) => {
         },
     });
     if (!existLike) {
-        const likes = await Like.create({ postId, userId: user_id, check: true });
+        const likes = await Like.create({ postId, userId, check: true });
     } else {
         await Like.destroy({
             where: {
@@ -187,8 +196,6 @@ router.put('/:postId/like', checkLogin, async (req, res) => {
             },
         });
     }
-    // 이러면 3번 db를 이용하기 때문에 성능에 문제가 있지 않을까?
-
 
     return res.json({ success: true });
 });
