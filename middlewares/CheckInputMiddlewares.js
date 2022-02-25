@@ -7,25 +7,21 @@ exports.checkPost = (req, res, next) => {
   const { userId } = res.locals;
 
   if (!userId) {
-    console.log("작성자 내용이 없습니다." );
     return res.status(200).send({
       msg: "작성자가 없습니다.",
     });
   }
   if (!img_position) {
-    console.log("이미지 내용이 없습니다." );
     return res.status(200).send({
       msg: "이미지 위치가 없습니다.",
     });
   }
   if (!post_img) {
-    console.log("이미지위치 내용이 없습니다." );
     return res.status(200).send({
       msg: "사진이 없습니다.",
     });
   }
   if (!post_content) {
-    console.log("게시글 내용이 없습니다." );
     return res.status(200).send({
       msg: "게시글 내용이 없습니다.",
     });
