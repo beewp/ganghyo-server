@@ -4,13 +4,7 @@ exports.checkPost = (req, res, next) => {
   const { img_position, post_content, post_img } = req.body;
 
   checkLogin(req, res, next);
-  const { userId } = res.locals;
 
-  if (!userId) {
-    return res.status(200).send({
-      msg: "작성자가 없습니다.",
-    });
-  }
   if (!img_position) {
     return res.status(200).send({
       msg: "이미지 위치가 없습니다.",
